@@ -1,0 +1,2 @@
+Modified hosts file on my laptop because I got tired of typing in the VM's IP address.
+SFTPed into VM and added a basic HTML page.
