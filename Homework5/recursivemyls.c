@@ -14,14 +14,13 @@ void myls(char *dirname, bool recursive, bool showhidden, int level) {
   if (recursive) {
     char format[256] = {}; //add spaces to beginning of directory name for readability
     int i;
-    for (i = 0; i < level - 1; i++) {
+    for (i = 0; i < level; i++) {
       if (i == 0)
         strncpy(format, "  ", 256);
       else
         strncat(format, "  ", 256);
     }
     strncat(format, dirname, 256);
-    strncat(format, "\0", 256);
     printf("%s:\n", format);
   }
   if (dir == NULL) { 
@@ -36,8 +35,11 @@ void myls(char *dirname, bool recursive, bool showhidden, int level) {
       if (recursive) {
         struct stat sb; //there is an easier way to do this on linux, but lstat is the more POSIX compliant one
         bool success = true;
-        char path[256];
-        strncat(strncat(strncat(strncpy(path,dirname,256),"/",256),entry->d_name,256),"\0",256); //store path to current entry in path 
+        char path[256]; //store path to current entry in path 
+        strncpy(path,dirname,256);
+        if (path[strlen(path) - 1] != '/')
+          strncat(path,"/",256);
+        strncat(path,entry->d_name,256); 
         if(lstat(path, &sb) == -1) //use lstat so hopefully program won't run forever on loops made with symlinks
           success = false;
         if (S_ISDIR(sb.st_mode) && success && strcmp(entry->d_name,".") != 0 && strcmp(entry->d_name,"..") != 0) 
@@ -49,7 +51,7 @@ void myls(char *dirname, bool recursive, bool showhidden, int level) {
       if (!recursed) { //add spaces to beginning of filename for readability
         char nameformat[256] = {};
         int j;
-        for (j = 0; j < level; j++) {
+        for (j = 0; j <= level; j++) {
           if (j == 0)
             strncpy(nameformat, "  ", 256);
           else
@@ -76,7 +78,7 @@ int main(int argc, char *argv[])
     myls(".", recursive, showhidden, 0);
   } else {
     for (int i=1; i<argc; ++i) {
-      if (0 == strcmp(argv[i], "-R"))
+      if (strcmp(argv[i], "-R") == 0)
         recursive = true;
       else if (strcmp(argv[i], "-a") == 0)
         showhidden = true;
